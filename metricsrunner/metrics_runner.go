@@ -65,7 +65,7 @@ func (m *MetricsRunner) run() error {
 		if strings.HasSuffix(m.version.ShortHash, "-dev") {
 			buildNumber += 0.5
 		}
-		m.metricsRouter.Write(m.metric.Name, buildNumber)
+		m.metricsRouter.Write(fmt.Sprintf("%s.%s", m.metric.Type, m.metric.Name), buildNumber)
 		return nil
 
 	case "http":
@@ -80,8 +80,8 @@ func (m *MetricsRunner) run() error {
 			return err
 		}
 		log.Println(fmt.Sprintf("%s %s - Elapsed: %s, Status Code: %d", m.metric.Method, m.metric.URL, elapsed, statusCode))
-		m.metricsRouter.Write(fmt.Sprintf("%s.elapsed", m.metric.Name), float64(elapsed/time.Microsecond)/1000.0)
-		m.metricsRouter.Write(fmt.Sprintf("%s.status-code", m.metric.Name), float64(statusCode))
+		m.metricsRouter.Write(fmt.Sprintf("%s.%s.elapsed", m.metric.Type, m.metric.Name), float64(elapsed/time.Microsecond)/1000.0)
+		m.metricsRouter.Write(fmt.Sprintf("%s.%s.status-code", m.metric.Type, m.metric.Name), float64(statusCode))
 		return nil
 
 	default:

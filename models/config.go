@@ -110,7 +110,7 @@ func (c *Config) LogSummary() {
 }
 
 // ReadProperty lets properties be read from the config using a query
-// path (e.g. "twilio.fromNumber.0"). If any errors occur, we return
+// path (e.g. "metrics.0.name"). If any errors occur, we return
 // an empty string.
 func (c *Config) ReadProperty(queryPath string) string {
 
