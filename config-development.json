@@ -1,0 +1,26 @@
+{
+  "env": "development",
+  "tlsEnable": false,
+  "port": 8080,
+  "logFile": "access.log",
+  "name": "metrics-runner",
+  "metricsRouter": {
+    "enabled": true,
+    "carbonHost": "",
+    "carbonPort": 2003
+  },
+  "metrics": [
+    {
+      "type": "build-number",
+      "name": "build-number",
+      "periodicity": "5m"
+    },
+    {
+      "type": "http",
+      "name": "mydomain-com",
+      "method": "GET",
+      "url": "https://mydomain.com/index.html",
+      "periodicity": "30s"
+    }
+  ]
+}
