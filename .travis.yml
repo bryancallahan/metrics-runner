@@ -1,0 +1,8 @@
+language: go
+
+go: 
+  - 1.11.2
+  - master
+
+script:
+  - go test -v ./...
