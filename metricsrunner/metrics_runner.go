@@ -76,10 +76,12 @@ func (m *MetricsRunner) run() error {
 		}
 
 		elapsed, statusCode, _, err := utilities.GetURL(false, m.metric.URL)
-		if err != nil {
-			return err
+		if err == nil {
+			log.Println(fmt.Sprintf("%s %s - Elapsed: %s, Status Code: %d", m.metric.Method, m.metric.URL, elapsed, statusCode))
+		} else {
+			log.Println(fmt.Sprintf("%s %s - Elapsed: %s, Status Code: %d, Error: %s", m.metric.Method, m.metric.URL, elapsed, statusCode, err))
 		}
-		log.Println(fmt.Sprintf("%s %s - Elapsed: %s, Status Code: %d", m.metric.Method, m.metric.URL, elapsed, statusCode))
+
 		m.metricsRouter.Write(fmt.Sprintf("%s.%s.elapsed", m.metric.Type, m.metric.Name), float64(elapsed/time.Microsecond)/1000.0)
 		m.metricsRouter.Write(fmt.Sprintf("%s.%s.status-code", m.metric.Type, m.metric.Name), float64(statusCode))
 		return nil
