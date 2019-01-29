@@ -72,7 +72,10 @@ func GetURL(insecureSkipVerify bool, url string) (time.Duration, int, []byte, er
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: insecureSkipVerify},
 	}
-	client := &http.Client{Transport: transport}
+	client := &http.Client{
+		Transport: transport,
+		Timeout:   30 * time.Second, // TODO - Pull from config or from metric
+	}
 
 	// Call url...
 	start := time.Now()
