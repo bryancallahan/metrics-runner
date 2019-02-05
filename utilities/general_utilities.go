@@ -17,15 +17,12 @@
 package utilities
 
 import (
-	"crypto/tls"
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 func WaitForOSSignal(terminate func() error) {
@@ -64,36 +61,4 @@ func ServeJSON(w http.ResponseWriter, r *http.Request, status int, response inte
 	if err != nil {
 		log.Println("Could not encode json response", err)
 	}
-}
-
-func GetURL(insecureSkipVerify bool, url string) (time.Duration, int, []byte, error) {
-
-	// Configure transport (allow us to optionally ignore bad certs)...
-	transport := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: insecureSkipVerify},
-	}
-	client := &http.Client{
-		Transport: transport,
-		Timeout:   30 * time.Second, // TODO - Pull from config or from metric
-	}
-
-	// Call url...
-	start := time.Now()
-	res, err := client.Get(url)
-	elapsed := time.Since(start)
-	if err != nil {
-		return 0, 0, nil, err
-	}
-	defer res.Body.Close()
-
-	// Read the whole body if needed downstream...
-	var body []byte
-	if res.Body != nil {
-		body, err = ioutil.ReadAll(res.Body)
-		if err != nil {
-			return 0, 0, nil, err
-		}
-	}
-
-	return elapsed, res.StatusCode, body, nil
 }

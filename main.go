@@ -139,6 +139,12 @@ func main() {
 
 	// Start all the metrics runners...
 	for _, metric := range config.Metrics {
+
+		if !metric.Enabled {
+			log.Println(fmt.Sprintf("skipping metrics runner for %s", metric.Name))
+			continue
+		}
+
 		metricsRunner := metricsrunner.NewMetricsRunner(version, config, metricsRouter, metric)
 		go metricsRunner.Start()
 		metricsRunners = append(metricsRunners, metricsRunner)

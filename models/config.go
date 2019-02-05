@@ -17,6 +17,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/jmoiron/jsonq"
 
 	"encoding/json"
@@ -34,11 +36,16 @@ type ConfigMetricsRouter struct {
 }
 
 type ConfigMetric struct {
-	Type        string   `json:"type"` // e.g. "build-number", "http"
-	Name        string   `json:"name"`
-	Method      string   `json:"method"`
-	URL         string   `json:"url"`
-	Periodicity Duration `json:"periodicity"` // Need to use our Duration so we can unmarshal
+	Enabled       bool              `json:"enabled"`
+	Type          string            `json:"type"` // e.g. "build-number", "http"
+	Name          string            `json:"name"`
+	Method        string            `json:"method"`
+	URL           string            `json:"url"`
+	Data          map[string]string `json:"data"`
+	Headers       map[string]string `json:"headers"`
+	Periodicity   Duration          `json:"periodicity"` // Need to use our Duration so we can unmarshal
+	Timeout       Duration          `json:"timeout"`
+	StringToCheck string            `json:"stringToCheck"`
 }
 
 type Config struct {
@@ -146,7 +153,7 @@ func decodeJson(filename string, s *Config) error {
 
 	// Make sure all metric names are unique...
 	countMap := map[string]int{}
-	for _, metric := range s.Metrics {
+	for i, metric := range s.Metrics {
 		countMap[metric.Name]++
 		if countMap[metric.Name] > 1 {
 			return fmt.Errorf("found duplicate metric by the name of %s (please make sure all "+
@@ -155,6 +162,12 @@ func decodeJson(filename string, s *Config) error {
 
 		if len(metric.Name) < 1 {
 			return fmt.Errorf("found empty metric name (please make sure all metrics have a name property)")
+		}
+
+		// Default timeout is 30 seconds...
+		if int64(metric.Timeout.Duration) == 0 {
+			metric.Timeout = Duration{Duration: time.Duration(30) * time.Second}
+			s.Metrics[i] = metric
 		}
 	}
 

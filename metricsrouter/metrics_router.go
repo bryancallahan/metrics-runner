@@ -69,7 +69,7 @@ func (m *MetricsRouter) Write(path string, value float64) {
 	fullPath := fmt.Sprintf("%s-%s.%s", name, strings.ToLower(m.config.Env)[0:4], path)
 
 	// If we don't have a receiver, don't send the metric...
-	if m.carbonReceiver == nil {
+	if !m.config.MetricsRouter.Enabled || m.carbonReceiver == nil || !m.carbonReceiver.IsDefined() {
 		return
 	}
 

@@ -26,7 +26,6 @@ import (
 
 	"github.com/bryancallahan/metrics-runner/metricsrouter"
 	"github.com/bryancallahan/metrics-runner/models"
-	"github.com/bryancallahan/metrics-runner/utilities"
 )
 
 type MetricsRunner struct {
@@ -70,20 +69,21 @@ func (m *MetricsRunner) run() error {
 
 	case "http":
 
-		// For the moment we only support GETs...
-		if m.metric.Method != "GET" {
-			return fmt.Errorf("method %s is currently not supported", m.metric.Method)
+		elapsed, statusCode, _, valid, err := models.QueryHTTPMetric(m.metric)
+		if err == nil {
+			log.Println(fmt.Sprintf("%s %s - Elapsed: %s, Status Code: %d, Valid: %t", m.metric.Method, m.metric.URL, elapsed, statusCode, valid))
+		} else {
+			log.Println(fmt.Sprintf("%s %s - Elapsed: %s, Status Code: %d, Valid: %t, Error: %s", m.metric.Method, m.metric.URL, elapsed, statusCode, valid, err))
 		}
 
-		elapsed, statusCode, _, err := utilities.GetURL(false, m.metric.URL)
-		if err == nil {
-			log.Println(fmt.Sprintf("%s %s - Elapsed: %s, Status Code: %d", m.metric.Method, m.metric.URL, elapsed, statusCode))
-		} else {
-			log.Println(fmt.Sprintf("%s %s - Elapsed: %s, Status Code: %d, Error: %s", m.metric.Method, m.metric.URL, elapsed, statusCode, err))
+		validMetric := 0
+		if valid {
+			validMetric = 1
 		}
 
 		m.metricsRouter.Write(fmt.Sprintf("%s.%s.elapsed", m.metric.Type, m.metric.Name), float64(elapsed/time.Microsecond)/1000.0)
 		m.metricsRouter.Write(fmt.Sprintf("%s.%s.status-code", m.metric.Type, m.metric.Name), float64(statusCode))
+		m.metricsRouter.Write(fmt.Sprintf("%s.%s.valid", m.metric.Type, m.metric.Name), float64(validMetric))
 		return nil
 
 	default:
@@ -93,7 +93,7 @@ func (m *MetricsRunner) run() error {
 
 func (m *MetricsRunner) Start() {
 
-	startDelay := 2 + (int)(10*rand.Float64())
+	startDelay := 2 + (int)(30*rand.Float64())
 	log.Print(fmt.Sprintf("waiting %d seconds before starting metrics runner for %s", startDelay, m.metric.Name))
 	time.Sleep(time.Duration(startDelay) * time.Second)
 	log.Print(fmt.Sprintf("metrics runner started for %s with a periodicity of %s", m.metric.Name, m.metric.Periodicity))
